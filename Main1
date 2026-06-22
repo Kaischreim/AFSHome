@@ -1,3 +1,4 @@
+```cpp
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
@@ -12,14 +13,14 @@ SoftwareSerial mp3Serial(mp3rx, mp3tx);
 DFRobotDFPlayerMini mp3;
 
 // Claude generates these
-float t[] = {2.5, 7.0, 14.5};
-int scorer[] = {1, 2, 1};
-int c1[] = {255,0,0};
-int c2[] = {0,0,255};
-String country1 = "Brazil";
-String country2 = "Argentina";
-int a1 = 1;   // 001.mp3
-int a2 = 2;   // 002.mp3
+float t[] = {4.2, 8.8, 10.2, 12.2};
+int scorer[] = {2, 1, 1, 2};
+int c1[] = {0, 56, 168};
+int c2[] = {0, 0, 0};
+String country1 = "Uruguay";
+String country2 = "Cape Verde Islands";
+int a1 = 17;   // 017.mp3
+int a2 = 31;   // 031.mp3
 
 int n = sizeof(t)/sizeof(t[0]);
 bool done[20];
@@ -94,3 +95,4 @@ void speaker(int teamNum) {
     mp3.play(a2);
   }
 }
+```
