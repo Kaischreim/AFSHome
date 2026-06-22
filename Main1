@@ -1,69 +1,67 @@
 #include <Servo.h>
 
 int r=9, g=10, b=11;
-int btn=4, servoPin=3;
+int btn=4;
+int servoPin=3;
 
 Servo servo;
 
 // Claude generates these
 float t[] = {2.5, 7.0, 14.5};
-int team[] = {1, 2, 1};
-int c1[] = {255, 0, 0};
-int c2[] = {0, 0, 255};
+int scorer[] = {1, 2, 1};
+int c1[] = {255,0,0};
+int c2[] = {0,0,255};
 
-int n = sizeof(t) / sizeof(t[0]);
+int n = sizeof(t)/sizeof(t[0]);
 bool done[20];
 
+unsigned long startTime;
+bool started = false;
+
 void setup() {
+
   pinMode(r,OUTPUT);
   pinMode(g,OUTPUT);
   pinMode(b,OUTPUT);
   pinMode(btn,INPUT);
 
   servo.attach(servoPin);
-  servo.write(0);
 }
 
 void loop() {
-  if(digitalRead(btn)==LOW) {
-    reset();
-    return;}
 
-  unsigned long start = millis();
-
-  while(digitalRead(btn)==HIGH) {
-    float now = (millis()-start)/1000.0;
-
-    for(int i=0; i<n; i++) {
-      if(now>=t[i] && !done[i]) {
-        done[i]=true;
-
-        if(team[i]==1) rgb(c1[0],c1[1],c1[2]);
-        else rgb(c2[0],c2[1],c2[2]);
-
-        kick();
-        rgb(0,0,0);}
-    }
-
-    if(now>=18) rgb(255,50,150);
-  }
+  if (digitalRead(btn) == HIGH) {
+    if (!started) {
+      startTime = millis();
+      started = true;}
+    float now = (millis()-startTime)/1000.0;
+    for (int i=0; i<n; i++) {
+      if (now >= t[i] && !done[i]) {
+        done[i] = true;
+        if (scorer[i] == 1)
+          rgb(c1[0],c1[1],c1[2]);
+        else
+          rgb(c2[0],c2[1],c2[2]);
+        goal();
+        rgb(0,0,0);}  }
+    if (now >= 18)
+      rgb(255,50,150); }
+  else {
+    started = false;
+    rgb(0,0,0);
+    for (int i=0; i<n; i++)
+      done[i] = false;  }
 }
 
-void kick() {
+void goal() {
   servo.write(90);
   delay(250);
   servo.write(0);
   delay(250);
 }
 
-void rgb(int red, int green, int blue) {
-  analogWrite(r,red);
-  analogWrite(g,green);
-  analogWrite(b,blue);}
-
-void reset() {
-  rgb(0,0,0);
-  servo.write(0);
-
-  for(int i=0; i<n; i++) done[i]=false;
+void rgb(int rr,int gg,int bb) {
+  analogWrite(r,rr);
+  analogWrite(g,gg);
+  analogWrite(b,bb);
 }
