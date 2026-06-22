@@ -85,3 +85,13 @@ jobs:
           git commit -m "Update Arduino goal timings"
           git push --force origin api-score-update
 
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh pr create \
+            --base test-branch \
+            --head api-score-update \
+            --title "Auto PR: api-score-update into test-branch" \
+            --body "Automated match data update" \
+            || echo "PR already exists"
