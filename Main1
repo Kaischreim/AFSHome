@@ -1,16 +1,25 @@
 #include <Servo.h>
+#include <SoftwareSerial.h>
+#include <DFRobotDFPlayerMini.h>
 
 int r=9, g=10, b=11;
 int btn=4;
-int servoPin=3;
-
+int servoPin=3; 
+int mp3rx=7;
+int mp3tx=8;
 Servo servo;
+SoftwareSerial mp3Serial(mp3rx, mp3tx);
+DFRobotDFPlayerMini mp3;
 
 // Claude generates these
 float t[] = {2.5, 7.0, 14.5};
 int scorer[] = {1, 2, 1};
 int c1[] = {255,0,0};
 int c2[] = {0,0,255};
+String country1 = "Brazil";
+String country2 = "Argentina";
+int a1 = 1;   // 001.mp3
+int a2 = 2;   // 002.mp3
 
 int n = sizeof(t)/sizeof(t[0]);
 bool done[20];
@@ -24,34 +33,45 @@ void setup() {
   pinMode(g,OUTPUT);
   pinMode(b,OUTPUT);
   pinMode(btn,INPUT);
-
   servo.attach(servoPin);
+  servo.write(0);
+  mp3Serial.begin(9600);
+  if (!mp3.begin(mp3Serial)) {
+  while(true);}
+  mp3.volume(25);
+  rgb(0,0,0);
 }
 
 void loop() {
 
-  if (digitalRead(btn) == HIGH) {
-    if (!started) {
-      startTime = millis();
-      started = true;}
-    float now = (millis()-startTime)/1000.0;
-    for (int i=0; i<n; i++) {
-      if (now >= t[i] && !done[i]) {
-        done[i] = true;
-        if (scorer[i] == 1)
-          rgb(c1[0],c1[1],c1[2]);
-        else
-          rgb(c2[0],c2[1],c2[2]);
-        goal();
-        rgb(0,0,0);}  }
-    if (now >= 18)
-      rgb(255,50,150); }
-  else {
-    started = false;
-    rgb(0,0,0);
-    for (int i=0; i<n; i++)
-      done[i] = false;  }
+if (digitalRead(btn) == HIGH) {
+  if (!started) {
+    startTime = millis();
+    started = true;}
+  float now = (millis()-startTime)/1000.0;
+  for (int i=0; i<n; i++) {
+    if (now >= t[i] && !done[i]) {
+      done[i] = true;
+      if (scorer[i] == 1) {
+        rgb(c1[0],c1[1],c1[2]); 
+        speaker(1);}
+      else {
+        rgb(c2[0],c2[1],c2[2]); 
+        speaker(2);}
+      goal();
+      rgb(0,0,0);
+    }
+  }
+  if (now >= 18) {
+    rgb(255,50,150);  }
 }
+else {
+  started = false;
+  rgb(0,0,0);
+  servo.write(0);
+  for (int i=0; i<n; i++) {
+    done[i] = false; }
+}}
 
 void goal() {
   servo.write(90);
@@ -64,4 +84,13 @@ void rgb(int rr,int gg,int bb) {
   analogWrite(r,rr);
   analogWrite(g,gg);
   analogWrite(b,bb);
+}
+
+void speaker(int teamNum) {
+  if(teamNum == 1) {
+    mp3.play(a1);
+  }
+  else {
+    mp3.play(a2);
+  }
 }
