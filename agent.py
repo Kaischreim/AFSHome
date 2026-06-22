@@ -97,7 +97,13 @@ def setup_branch():
 
 def main():
     git(["git", "config", "user.email", "arduino-bot@noreply"])
-    git(["git", "config", "user.name", "arduino-bot"])
+    git(["git", "config", "user.name", "arduino-bot"])# use PAT token if available for triggering workflows
+    
+    import os
+    pat = os.environ.get("PAT_TOKEN")
+    if pat:
+        git(["git", "remote", "set-url", "origin", 
+             f"https://x-access-token:{pat}@github.com/Kaischreim/AFSHome.git"])
 
     try:
         with open(MATCH_FILE, "r") as f:
