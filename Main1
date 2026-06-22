@@ -5,8 +5,8 @@
 int r=9, g=10, b=11;
 int btn=4;
 int servoPin=3; 
-int mp3rx=7;
-int mp3tx=8;
+int mp3rx=5;
+int mp3tx=6;
 Servo servo;
 SoftwareSerial mp3Serial(mp3rx, mp3tx);
 DFRobotDFPlayerMini mp3;
