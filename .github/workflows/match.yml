@@ -1,12 +1,9 @@
 name: match
-
 on:
   workflow_dispatch:
-
 jobs:
   get-score:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -17,85 +14,85 @@ jobs:
         with:
           script: |
             const fs = require("fs");
-
             const key = process.env.API_FOOTBALL_KEY;
             const base = "https://v3.football.api-sports.io";
-
             async function api(path) {
               const res = await fetch(base + path, {
                 headers: { "x-apisports-key": key }
               });
-
               const data = await res.json();
               return data.response || [];
             }
-
             const now = new Date();
             let games = [];
-
             for (let i = 1; i <= 4; i++) {
               const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
               const date = d.toISOString().slice(0, 10);
-
               const dayGames = await api(`/fixtures?date=${date}`);
               games.push(...dayGames);
             }
-
             const worldCupGames = games.filter(g => {
               const name = (g.league.name || "").toLowerCase().trim();
               return name === "world cup";
             });
-
             const done = worldCupGames.filter(g => {
               const s = g.fixture.status.short;
               const h = Number(g.goals.home || 0);
               const a = Number(g.goals.away || 0);
-
               return ["FT", "AET", "PEN"].includes(s) && h + a > 0;
             });
-
             if (done.length === 0) {
-              console.log("{}");
+              console.log("No games found");
               return;
             }
-
             const game = done[Math.floor(Math.random() * done.length)];
-
             const id = game.fixture.id;
             const team1 = game.teams.home.name;
             const team2 = game.teams.away.name;
             const team1Id = game.teams.home.id;
             const score1 = game.goals.home;
             const score2 = game.goals.away;
-
             const events = await api(`/fixtures/events?fixture=${id}`);
-
             const goals = events
               .filter(e => e.type === "Goal")
-              .map(e => {
-                return {
-                  team: e.team.id === team1Id ? 1 : 2,
-                  minute: e.time.elapsed + (e.time.extra || 0)
-                };
-              });
-
+              .map(e => ({
+                team: e.team.id === team1Id ? 1 : 2,
+                minute: e.time.elapsed + (e.time.extra || 0)
+              }));
             if (goals.length === 0) {
-              console.log("{}");
+              console.log("No goals found");
               return;
             }
-
-            const match = {
-              league: game.league.name,
-              team1,
-              team2,
-              score1,
-              score2,
-              goals
-            };
-
-            fs.writeFileSync(
-              "match.json",
-              JSON.stringify(match, null, 2)
-            );
-
+            const match = { league: game.league.name, team1, team2, score1, score2, goals };
+            fs.writeFileSync("match.json", JSON.stringify(match, null, 2));
             console.log(JSON.stringify(match, null, 2));
+
+      - name: Commit match.json
+        run: |
+          git config user.email "arduino-bot@noreply"
+          git config user.name "arduino-bot"
+          git add match.json
+          git commit -m "Update match data" || echo "No changes to commit"
+          git push origin main
+
+  run-agent:
+    needs: get-score
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install dependencies
+        run: py -m pip install anyio claude-agent-sdk
+
+      - name: Run agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python agent.py
