@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: test-branch
 
       - name: Fetch random completed World Cup match with goals
         uses: actions/github-script@v8
@@ -67,32 +69,14 @@ jobs:
             fs.writeFileSync("match.json", JSON.stringify(match, null, 2));
             console.log(JSON.stringify(match, null, 2));
 
-      - name: Commit match.json
+      - name: Commit match.json and run agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           git config user.email "arduino-bot@noreply"
           git config user.name "arduino-bot"
-          git add match.json
-          git commit -m "Update match data" || echo "No changes to commit"
-          git push origin main
-
-  run-agent:
-    needs: get-score
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.14'
-
-      - name: Install dependencies
-        run: py -m pip install anyio claude-agent-sdk
-
-      - name: Run agent
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python agent.py
+          pip install anthropic
+          python agent.py
+          git add .
+          git commit -m "Update Arduino goal timings"
+          git push origin api-score-update
