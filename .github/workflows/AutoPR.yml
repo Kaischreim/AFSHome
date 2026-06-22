@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@v4  
+        with:
+          ref: test-branch
+          token: ${{ secrets.PAT_TOKEN }}
       - name: Check commit author
         id: author_check
         run: |
