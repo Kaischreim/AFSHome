@@ -82,7 +82,7 @@ jobs:
           pip install anthropic
           python agent.py
           git add .
-          git commit -m "Update Arduino goal timings"
+          git commit -m "Update Arduino goal timings" || true
           git push --force origin api-score-update
 
       - name: Create Pull Request
