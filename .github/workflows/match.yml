@@ -70,15 +70,17 @@ jobs:
             const match = { league: game.league.name, team1, team2, score1, score2, goals };
             fs.writeFileSync("match.json", JSON.stringify(match, null, 2));
             console.log(JSON.stringify(match, null, 2));
-
+            
       - name: Commit match.json and run agent
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/Kaischreim/AFSHome.git
           git config user.email "arduino-bot@noreply"
           git config user.name "arduino-bot"
           pip install anthropic
           python agent.py
           git add .
           git commit -m "Update Arduino goal timings"
-          git push origin api-score-update
+          git push --force origin api-score-update
+
