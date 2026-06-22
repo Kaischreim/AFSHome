@@ -120,7 +120,7 @@ def main():
 
     git(["git", "add", "."])
     git(["git", "commit", "-m", "Update Arduino goal timings"])
-    git(["git", "push", "origin", "api-score-update"])
+    git(["git", "push", "--force", "origin", "api-score-update"])
     print("Done! Pushed to api-score-update branch.")
 
 if __name__ == "__main__":
